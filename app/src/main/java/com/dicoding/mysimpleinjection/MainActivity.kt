@@ -1,30 +1,55 @@
 package com.dicoding.mysimpleinjection
 
+import android.app.Application
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import org.koin.android.ext.android.inject
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
+import org.koin.dsl.module
+
+
+val appModule = module {
+    factory {
+        Engine(get())
+    }
+
+    single {
+        Car(get())
+    }
+}
+
+open class MyApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        startKoin {
+            androidContext(this@MyApplication)
+            modules(appModule)
+        }
+    }
+}
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var engine: Engine
+    val car: Car by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        engine = Engine()
-        val car = Car(engine)
         car.start()
     }
 }
 
-class Car (private val engine: Engine) {
+class Car(private val engine: Engine) {
     fun start() {
         engine.start()
     }
 }
 
-class Engine() {
+class Engine(val context: Context) {
     fun start() {
-        println("Engine started....")
+        println(context.applicationContext.getString(R.string.engine_start))
     }
 }
