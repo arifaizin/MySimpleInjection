@@ -8,40 +8,33 @@ import dagger.BindsInstance
 import dagger.Component
 import dagger.Module
 import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.HiltAndroidApp
+import dagger.hilt.android.components.ApplicationComponent
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Module
+@InstallIn(ApplicationComponent::class)
 class AppModule {
+    @Singleton
     @Provides
-    fun provideEngine(context: Context): Engine = Engine(context)
+    fun provideEngine(@ApplicationContext context: Context): Engine = Engine(context)
 }
 
-@Singleton
-@Component(modules = [AppModule::class])
-interface AppComponent {
-    @Component.Factory
-    interface Factory {
-        fun create(@BindsInstance context: Context): AppComponent
-    }
-
-    fun inject(activity: MainActivity)
+@HiltAndroidApp
+open class MyApplication : Application() {
 }
 
-open class MyApplication : Application(){
-    val appComponent: AppComponent by lazy {
-        DaggerAppComponent.factory().create(
-            applicationContext
-        )    }
-}
-
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var car: Car
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        (application as MyApplication).appComponent.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
